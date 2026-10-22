@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "current_feature": "core-analyzer",
+  "features": [
+    {
+      "id": "core-analyzer",
+      "title": "PHP Issue Analyzer Core Engine",
+      "status": "done",
+      "acceptance": [
+        "Parse PHP GitHub issues and extract structured data (version, OS, stack traces, error patterns)",
+        "Classify issues by category: segfault, performance, memory, logic bug, platform-specific",
+        "Generate reproducible test cases from issue descriptions",
+        "Provide API endpoint to analyze new issue text"
+      ],
+      "implementation": [
+        "backend/app/services/analyzer.py",
+        "backend/app/models/schemas.py",
+        "backend/app/api/issues.py"
+      ],
+      "tests": [
+        "backend/tests/test_analyzer.py"
+      ]
+    },
+    {
+      "id": "api-server",
+      "title": "FastAPI Backend with SQLite",
+      "status": "done",
+      "acceptance": [
+        "FastAPI app with /api/issues endpoint for CRUD operations",
+        "SQLite persistence with proper schema for issues, analyses, test cases",
+        "Health check endpoint",
+        "Pagination and filtering on issue list"
+      ],
+      "implementation": [
+        "backend/app/main.py",
+        "backend/app/api/issues.py",
+        "backend/app/api/health.py",
+        "backend/app/models/issue.py",
+        "backend/app/core/database.py",
+        "backend/app/core/config.py",
+        "backend/app/services/issue_service.py"
+      ],
+      "tests": [
+        "backend/tests/test_api.py",
+        "backend/tests/conftest.py"
+      ]
+    },
+    {
+      "id": "frontend-dashboard",
+      "title": "React Dashboard for Issue Analysis",
+      "status": "done",
+      "acceptance": [
+        "Dashboard listing issues with category, version, status",
+        "Detail view showing stack trace, classification, suggested test case",
+        "Create/import workflow for new GitHub issues",
+        "Export analysis as JSON/Markdown"
+      ],
+      "implementation": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/Dashboard.tsx",
+        "frontend/src/components/IssueCard.tsx",
+        "frontend/src/components/IssueDetail.tsx",
+        "frontend/src/components/IssueImport.tsx",
+        "frontend/src/hooks/useIssues.ts",
+        "frontend/src/api/client.ts",
+        "frontend/src/types/api.ts"
+      ],
+      "tests": [
+        "frontend/src/components/IssueCard.test.tsx",
+        "frontend/src/components/Dashboard.test.tsx"
+      ]
+    },
+    {
+      "id": "auth-oidc",
+      "title": "OIDC Authentication with Keycloak",
+      "status": "planned",
+      "acceptance": [
+        "Keycloak realm configuration",
+        "Backend session management with HttpOnly cookies",
+        "Frontend PKCE flow with in-memory tokens",
+        "Role-based access (viewer, operator, admin)"
+      ],
+      "implementation": [],
+      "tests": []
+    },
+    {
+      "id": "docker-compose",
+      "title": "Docker Compose with Keycloak",
+      "status": "done",
+      "acceptance": [
+        "Backend and frontend Dockerfiles with non-root users",
+        "compose.yaml with Keycloak and persistent volumes",
+        "Health checks for all services",
+        "Development profile binding to 127.0.0.1"
+      ],
+      "implementation": [
+        "backend/Dockerfile",
+        "frontend/Dockerfile",
+        "frontend/nginx.conf",
+        "compose.yaml"
+      ],
+      "tests": []
+    },
+    {
+      "id": "ci-pipeline",
+      "title": "GitHub Actions CI Pipeline",
+      "status": "done",
+      "acceptance": [
+        "Backend pytest tests (minimum 12 meaningful tests)",
+        "Frontend npm build and vitest tests (minimum 3 tests)",
+        "Docker build for both services",
+        "Lock file validation"
+      ],
+      "implementation": [
+        ".github/workflows/ci.yml"
+      ],
+      "tests": []
+    },
+    {
+      "id": "docs-packaging",
+      "title": "Documentation and Packaging",
+      "status": "done",
+      "acceptance": [
+        "README with install/run/test steps and architecture diagram",
+        "portfolio.json with schema_version=1",
+        "LICENSE MIT, CHANGELOG.md",
+        ".env.example with blank credentials"
+      ],
+      "implementation": [
+        "README.md",
+        "portfolio.json",
+        "LICENSE",
+        "CHANGELOG.md",
+        ".env.example",
+        ".gitignore",
+        "pyproject.toml"
+      ],
+      "tests": []
+    }
+  ]
+}
