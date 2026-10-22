@@ -1,0 +1,57 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test coverage
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/*.local
+
+# Docker
+.docker/
+
+# Agent metadata (not product source)
+.antigravitycli/
+.omp/
+
+# Alembic
+backend/alembic/versions/
