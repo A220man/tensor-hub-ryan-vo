@@ -21,7 +21,18 @@ class TestPHPIssueAnalyzer:
         assert analysis.confidence >= 80
         assert test_case is not None
         assert "opcache.jit" in test_case.code
-
+    def test_segfault_jit_classification_lowercase(self, analyzer):
+        request = AnalyzeRequest(
+            title="JIT segmentation fault in PHP 8.1",
+            body="program terminated with signal 11, segmentation fault. #0 0x000055bbf04c0f25 in zend_new_spec_const_unused_handler () at /usr/src/debug/php-8.1.1/Zend/zend_vm_execute.h:10137 ce = cached_ptr(opline->op2.num);",
+            php_version="8.1.1",
+            os="CentOS 7",
+        )
+        analysis, test_case = analyzer.analyze(request)
+        assert analysis.classification == IssueCategory.SEGFAULT.value
+        assert analysis.confidence >= 80
+        assert test_case is not None
+        assert "opcache.jit" in test_case.code
     def test_segfault_ldap_classification(self, analyzer):
         request = AnalyzeRequest(
             title="Segmentation fault on exit when using ldap_bind()",
