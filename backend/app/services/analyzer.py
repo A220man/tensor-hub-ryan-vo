@@ -172,7 +172,7 @@ class PHPIssueAnalyzer:
         text = f"{title}\n{body}".lower()
 
         if category == IssueCategory.SEGFAULT:
-            if "ZEND_NEW_SPEC_CONST_UNUSED_HANDLER" in body and "CACHED_PTR" in body:
+            if "zend_new_spec_const_unused_handler" in text and "cached_ptr" in text:
                 return (
                     "JIT compilation issue in PHP 8.1: CACHED_PTR dereference in ZEND_NEW_SPEC_CONST_UNUSED_HANDLER "
                     "accesses invalid memory address. Likely related to opcache JIT tracing mode.",
@@ -271,7 +271,7 @@ class PHPIssueAnalyzer:
     ) -> Optional[TestCaseCreate]:
         text = f"{title}\n{body}".lower()
 
-        if category == IssueCategory.SEGFAULT and "ZEND_NEW_SPEC_CONST_UNUSED_HANDLER" in body:
+        if category == IssueCategory.SEGFAULT and "zend_new_spec_const_unused_handler" in text:
             return TestCaseCreate(
                 language="php",
                 code='<?php\n// Test case for JIT segfault in PHP 8.1\n// Run with: php -d opcache.enable=1 -d opcache.jit=tracing test.php\n\nclass TestClass {\n    public function __construct() {\n        // Trigger JIT compilation path\n        $x = new self();\n    }\n}\n\n// This may segfault in PHP 8.1.0/8.1.1 with JIT enabled\nfor ($i = 0; $i < 1000; $i++) {\n    new TestClass();\n}\necho "OK\\n";',

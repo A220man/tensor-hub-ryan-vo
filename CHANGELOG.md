@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0 — work-in-progress checkpoint
+
+Partial code published for continued development. Known issues: STATUS.md.
+
 ## 1.0.0 — work-in-progress checkpoint
 
 Partial code published for continued development. Known issues: STATUS.md.
@@ -32,6 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Input validation on all API endpoints
 
 ## [Unreleased]
+
+### Fixed
+- Case-sensitivity bug in PHPIssueAnalyzer JIT handler detection (both root cause analysis and test case generation)
+- Added test coverage for lowercase JIT handler patterns
 
 ### Planned
 - Full OIDC authentication implementation
