@@ -151,3 +151,64 @@ class TestPHPIssueAnalyzer:
         assert analysis1.root_cause == analysis2.root_cause
         if tc1 and tc2:
             assert tc1.code == tc2.code
+
+    def test_php_version_detection_full(self, analyzer):
+        request = AnalyzeRequest(
+            title="Crash in PHP 8.3.1",
+            body="Segmentation fault when running on PHP 8.3.1 with JIT enabled",
+            php_version="8.3",
+            os="Linux",
+        )
+        analysis, _ = analyzer.analyze(request)
+        assert analysis.php_version_detected == "8.3.1"
+
+    def test_php_version_detection_major_minor(self, analyzer):
+        request = AnalyzeRequest(
+            title="Issue",
+            body="Crash on PHP 8.2",
+            php_version="8.2",
+            os="Linux",
+        )
+        analysis, _ = analyzer.analyze(request)
+        assert analysis.php_version_detected == "8.2"
+
+    def test_os_detection_windows(self, analyzer):
+        request = AnalyzeRequest(
+            title="Windows crash",
+            body="Segmentation fault on Windows 10",
+            php_version="8.2",
+            os="Windows",
+        )
+        analysis, _ = analyzer.analyze(request)
+        assert analysis.os_detected == "windows"
+
+    def test_os_detection_ubuntu(self, analyzer):
+        request = AnalyzeRequest(
+            title="Ubuntu issue",
+            body="Memory leak on Ubuntu 22.04",
+            php_version="8.1",
+            os="Linux",
+        )
+        analysis, _ = analyzer.analyze(request)
+        assert analysis.os_detected == "ubuntu"
+
+    def test_os_detection_macos(self, analyzer):
+        request = AnalyzeRequest(
+            title="macOS crash",
+            body="Segfault on macOS Darwin",
+            php_version="8.2",
+            os="Darwin",
+        )
+        analysis, _ = analyzer.analyze(request)
+        assert analysis.os_detected == "macos"
+
+    def test_no_detection_when_absent(self, analyzer):
+        request = AnalyzeRequest(
+            title="Random question",
+            body="How do I install PHP?",
+            php_version="8.2",
+            os="Linux",
+        )
+        analysis, _ = analyzer.analyze(request)
+        assert analysis.php_version_detected is None
+        assert analysis.os_detected is None

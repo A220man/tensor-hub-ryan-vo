@@ -17,6 +17,7 @@ Acceptance:
 - Classify issues by category: segfault, performance, memory, logic bug, platform-specific
 - Generate reproducible test cases from issue descriptions
 - Provide API endpoint to analyze new issue text
+- Auto-detect PHP version and OS from issue text
 
 Implementation: `backend/app/services/analyzer.py`, `backend/app/models/schemas.py`, `backend/app/api/issues.py`
 

@@ -76,6 +76,14 @@ class AnalysisBase(BaseModel):
     root_cause: Optional[str] = None
     suggested_fix: Optional[str] = None
     confidence: int = Field(ge=0, le=100, default=0)
+    php_version_detected: Optional[str] = None
+    os_detected: Optional[str] = None
+    classification: str
+    stack_trace: Optional[str] = None
+    error_patterns: Optional[List[str]] = None
+    root_cause: Optional[str] = None
+    suggested_fix: Optional[str] = None
+    confidence: int = Field(ge=0, le=100, default=0)
 
 
 class AnalysisCreate(AnalysisBase):
