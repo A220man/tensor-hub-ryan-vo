@@ -10,7 +10,8 @@
         "Parse PHP GitHub issues and extract structured data (version, OS, stack traces, error patterns)",
         "Classify issues by category: segfault, performance, memory, logic bug, platform-specific",
         "Generate reproducible test cases from issue descriptions",
-        "Provide API endpoint to analyze new issue text"
+        "Provide API endpoint to analyze new issue text",
+        "Auto-detect PHP version and OS from issue text"
       ],
       "implementation": [
         "backend/app/services/analyzer.py",

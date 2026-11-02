@@ -91,25 +91,35 @@ class PHPIssueAnalyzer:
         re.IGNORECASE
     )
 
+    OS_PATTERN = re.compile(
+        r"\b(linux|windows|macos|darwin|ubuntu|debian|centos|fedora|rhel|alpine|freebsd|openbsd|netbsd|solaris|aix)\b",
+        re.IGNORECASE
+    )
+
     def analyze(self, request: AnalyzeRequest) -> tuple[AnalysisCreate, Optional[TestCaseCreate]]:
         text = f"{request.title}\n{request.body}".lower()
+        body = request.body
 
         # Classify
         category = self._classify(text)
 
         # Extract stack trace
-        stack_trace = self._extract_stack_trace(request.body)
+        stack_trace = self._extract_stack_trace(body)
 
         # Extract error patterns
-        error_patterns = self._extract_error_patterns(request.body)
+        error_patterns = self._extract_error_patterns(body)
+
+        # Detect PHP version and OS from issue text
+        php_version_detected = self._detect_php_version(body)
+        os_detected = self._detect_os(body)
 
         # Determine root cause and suggested fix
         root_cause, suggested_fix, confidence = self._determine_root_cause(
-            category, request.title, request.body, stack_trace, error_patterns
+            category, request.title, body, stack_trace, error_patterns
         )
 
         # Generate test case
-        test_case = self._generate_test_case(category, request.title, request.body, error_patterns)
+        test_case = self._generate_test_case(category, request.title, body, error_patterns)
 
         analysis = AnalysisCreate(
             classification=category.value,
@@ -118,6 +128,8 @@ class PHPIssueAnalyzer:
             root_cause=root_cause,
             suggested_fix=suggested_fix,
             confidence=confidence,
+            php_version_detected=php_version_detected,
+            os_detected=os_detected,
         )
 
         return analysis, test_case
@@ -160,6 +172,25 @@ class PHPIssueAnalyzer:
         for func in re.findall(r"\b(zend_\w+|php_\w+|ZEND_\w+)\b", body):
             patterns.append(func)
         return list(dict.fromkeys(patterns))[:10]  # Unique, limited
+
+    def _detect_php_version(self, body: str) -> Optional[str]:
+        """Detect PHP version from issue text."""
+        match = self.PHP_VERSION_PATTERN.search(body)
+        if match:
+            return match.group(1)
+        # Also check for major.minor format
+        major_minor_pattern = re.compile(r"PHP\s+(\d+\.\d+)(?:\.\d+)?", re.IGNORECASE)
+        match = major_minor_pattern.search(body)
+        if match:
+            return match.group(1)
+        return None
+
+    def _detect_os(self, body: str) -> Optional[str]:
+        """Detect OS from issue text."""
+        match = self.OS_PATTERN.search(body)
+        if match:
+            return match.group(1).lower()
+        return None
 
     def _determine_root_cause(
         self,
