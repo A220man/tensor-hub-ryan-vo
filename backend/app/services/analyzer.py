@@ -280,12 +280,49 @@ class PHPIssueAnalyzer:
                 55
             )
 
+        if category == IssueCategory.MEMORY:
+            if "memory leak" in text or "leak" in text:
+                return (
+                    "Memory leak detected in PHP engine or extension. Common causes: "
+                    "circular references not collected by GC, extension memory not freed, "
+                    "or PHP internal reference counting bug.",
+                    "Enable gc_collect_cycles() periodically. Check extensions for known leaks. "
+                    "Use valgrind/memcheck to identify leak source. Upgrade to newer PHP version.",
+                    80
+                )
+            if "out of memory" in text or "oom" in text:
+                return (
+                    "Script exceeded memory_limit. Caused by large data processing, "
+                    "inefficient algorithms, or memory leak accumulating over time.",
+                    "Increase memory_limit temporarily. Optimize data structures (generators, iterators). "
+                    "Process data in chunks. Check for memory leaks with gc_collect_cycles().",
+                    75
+                )
+            if "memory_limit" in text:
+                return (
+                    "memory_limit configuration issue or intentional limit for resource control.",
+                    "Adjust memory_limit in php.ini or via ini_set(). Profile memory usage with memory_get_peak_usage().",
+                    60
+                )
+            return (
+                "Memory-related issue: leak, OOM, or allocation failure in PHP runtime.",
+                "Profile with memory_get_usage()/memory_get_peak_usage(). Check for circular references. "
+                    "Verify extensions (especially GD, imagick, openssl) are not leaking.",
+                55
+            )
+
         if category == IssueCategory.FEATURE_REQUEST:
             return (
                 "Feature request for PHP language or standard library enhancement.",
                 "Follow PHP RFC process: https://wiki.php.net/rfc/howto. Gather community support.",
                 40
             )
+
+        return (
+            "Unable to determine specific root cause from available information.",
+            "Provide more details: minimal reproduction code, PHP version, OS, extensions, full stack trace.",
+            30
+        )
 
         return (
             "Unable to determine specific root cause from available information.",
@@ -348,6 +385,29 @@ class PHPIssueAnalyzer:
                 code='<?php\n// Test case for GC performance regression\n// Compare runtime with different gc_threshold values\n\nfunction createObjects(int $count): array {\n    $objects = [];\n    for ($i = 0; $i < $count; $i++) {\n        $objects[] = new stdClass();\n    }\n    return $objects;\n}\n\n$start = microtime(true);\nfor ($i = 0; $i < 100; $i++) {\n    $objs = createObjects(1000);\n    unset($objs);\n}\n$end = microtime(true);\n\necho "Time: " . ($end - $start) . " seconds\\n";\n// Run with: php -d gc_threshold=10000 test.php\n// Compare with: php -d gc_threshold=1000000 test.php\n',
                 description="Measures GC impact on object allocation/cleanup performance",
                 expected_behavior="Higher gc_threshold should reduce GC overhead",
+            )
+
+        if category == IssueCategory.MEMORY and ("memory leak" in text or "leak" in text):
+            return TestCaseCreate(
+                language="php",
+                code='<?php\n// Test case for memory leak detection\n// Run with: php -d zend.enable_gc=1 test.php\n// Monitor with: valgrind --leak-check=full php test.php\n\nclass LeakyClass {\n    public $self;\n    public $data;\n\n    public function __construct($size = 10000) {\n        $this->data = str_repeat("x", $size);\n        $this->self = $this; // Circular reference\n    }\n}\n\n// Create many objects with circular references\nfor ($i = 0; $i < 1000; $i++) {\n    $obj = new LeakyClass(10000);\n    // Without gc_collect_cycles(), these leak until shutdown\n    unset($obj);\n}\n\n// Force GC to collect cycles\ngc_collect_cycles();\n\necho "Peak memory: " . memory_get_peak_usage(true) . " bytes\\n";\necho "Current memory: " . memory_get_usage(true) . " bytes\\n";\necho "OK\\n";',
+                description="Reproduces memory leak from circular references not collected by GC",
+                expected_behavior="Memory should be freed after gc_collect_cycles(); peak memory should stabilize",
+            )
+        if category == IssueCategory.MEMORY and ("out of memory" in text or "oom" in text):
+            return TestCaseCreate(
+                language="php",
+                code='<?php\n// Test case for OOM with large data processing\n// Demonstrates memory-efficient chunked processing vs loading all at once\n\n// INEFFICIENT: Loads entire file into memory\nfunction processAllAtOnce(string $file): int {\n    $content = file_get_contents($file); // All at once\n    return strlen($content);\n}\n\n// EFFICIENT: Process in chunks\nfunction processInChunks(string $file): int {\n    $handle = fopen($file, "r");\n    $total = 0;\n    while (!feof($handle)) {\n        $chunk = fread($handle, 8192);\n        $total += strlen($chunk);\n    }\n    fclose($handle);\n    return $total;\n}\n\n// Create test file (10MB)\n$testFile = sys_get_temp_dir() . "/oom_test.dat";\nfile_put_contents($testFile, str_repeat("x", 10 * 1024 * 1024));\n\necho "Processing 10MB file...\\n";\n$start = memory_get_usage(true);\nprocessInChunks($testFile);\necho "Chunked peak: " . (memory_get_peak_usage(true) - $start) . " bytes\\n";\n\n@unlink($testFile);\necho "OK\\n";',
+                description="Demonstrates chunked processing to avoid OOM on large files",
+                expected_behavior="Chunked processing uses constant memory regardless of file size",
+            )
+
+        if category == IssueCategory.MEMORY and "memory_limit" in text:
+            return TestCaseCreate(
+                language="php",
+                code='<?php\n// Test case for memory_limit configuration\n// Run with: php -d memory_limit=64M test.php\n\nfunction measureMemoryLimit(): void {\n    $limit = ini_get("memory_limit");\n    echo "Configured memory_limit: $limit\\n";\n    \n    // Convert to bytes\n    $limitBytes = -1;\n    if ($limit !== "-1") {\n        $unit = strtolower(substr($limit, -1));\n        $value = (int)substr($limit, 0, -1);\n        switch ($unit) {\n            case "g": $limitBytes = $value * 1024 * 1024 * 1024; break;\n            case "m": $limitBytes = $value * 1024 * 1024; break;\n            case "k": $limitBytes = $value * 1024; break;\n            default: $limitBytes = $value; break;\n        }\n    }\n    \n    echo "Limit in bytes: " . ($limitBytes === -1 ? "unlimited" : $limitBytes) . "\\n";\n    echo "Current usage: " . memory_get_usage(true) . " bytes\\n";\n    echo "Peak usage: " . memory_get_peak_usage(true) . " bytes\\n";\n}\n\nmeasureMemoryLimit();\n\n// Try to allocate up to limit\n$chunks = [];\ntry {\n    while (true) {\n        $chunks[] = str_repeat("x", 1024 * 1024); // 1MB chunks\n    }\n} catch (Throwable $e) {\n    echo "Caught: " . get_class($e) . " - " . $e->getMessage() . "\\n";\n}\n\necho "Final peak: " . memory_get_peak_usage(true) . " bytes\\n";\necho "OK\\n";',
+                description="Tests memory_limit behavior and peak memory tracking",
+                expected_behavior="Script respects memory_limit; peak memory tracked correctly",
             )
 
         # Generic test case template

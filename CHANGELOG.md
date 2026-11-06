@@ -1,9 +1,45 @@
 # Changelog
 
+## 1.3.0 — work-in-progress checkpoint
+
+Partial code published for continued development. Known issues: STATUS.md.
+
 ## 1.2.0 — work-in-progress checkpoint
 
 Partial code published for continued development. Known issues: STATUS.md.
 
+## 1.1.0 — work-in-progress checkpoint
+
+### Added
+- Automatic PHP version detection from issue text (supports full version "8.3.1" and major.minor "8.2")
+- Automatic OS detection from issue text (Linux distros, Windows, macOS/Darwin, BSD variants)
+- New `php_version_detected` and `os_detected` fields in analysis API response
+- 6 new analyzer tests for version/OS detection
+
+### Fixed
+- Case-sensitivity bug in PHPIssueAnalyzer JIT handler detection (both root cause analysis and test case generation)
+- Added test coverage for lowercase JIT handler patterns
+
+Partial code published for continued development. Known issues: STATUS.md.
+
+
+## 1.2.0 — work-in-progress checkpoint
+
+### Added
+- Complete memory issue classification support in PHPIssueAnalyzer
+  - Memory leak detection with circular reference test case generation
+  - Out of memory (OOM) handling with chunked processing test case
+  - memory_limit configuration analysis with limit tracking test case
+  - Generic memory issue fallback with profiling guidance
+- Root cause analysis and suggested fixes for memory issues (leak, OOM, memory_limit, generic)
+- 4 new analyzer tests for memory classification (leak, OOM, memory_limit, generic)
+- 22 total analyzer tests, 32 total backend tests
+
+### Fixed
+- Case-sensitivity bug in PHPIssueAnalyzer JIT handler detection (both root cause analysis and test case generation)
+- Added test coverage for lowercase JIT handler patterns
+
+Partial code published for continued development. Known issues: STATUS.md.
 ## 1.1.0 — work-in-progress checkpoint
 
 ### Added

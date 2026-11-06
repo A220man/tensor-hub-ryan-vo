@@ -212,3 +212,49 @@ class TestPHPIssueAnalyzer:
         analysis, _ = analyzer.analyze(request)
         assert analysis.php_version_detected is None
         assert analysis.os_detected is None
+
+    def test_memory_leak_classification(self, analyzer):
+        request = AnalyzeRequest(
+            title="Memory leak in PHP 8.2 with circular references",
+            body="We're seeing a memory leak when creating objects with circular references. "
+            "The GC doesn't seem to collect them properly. memory usage grows unbounded.",
+        )
+        analysis, test_case = analyzer.analyze(request)
+        assert analysis.classification == IssueCategory.MEMORY.value
+        assert "circular" in test_case.code.lower()
+        assert "gc_collect_cycles" in test_case.code
+        assert analysis.confidence >= 75
+
+    def test_memory_oom_classification(self, analyzer):
+        request = AnalyzeRequest(
+            title="Out of memory error processing large file",
+            body="Script crashes with 'Allowed memory size of 134217728 bytes exhausted' "
+            "(tried to allocate 2048000 bytes). OOM when reading large dataset.",
+        )
+        analysis, test_case = analyzer.analyze(request)
+        assert analysis.classification == IssueCategory.MEMORY.value
+        assert "chunk" in test_case.code.lower()
+        assert "fread" in test_case.code
+        assert analysis.confidence >= 70
+
+    def test_memory_limit_classification(self, analyzer):
+        request = AnalyzeRequest(
+            title="memory_limit configuration issue",
+            body="Need to adjust memory_limit for this script. Getting memory_limit errors "
+            "even though the dataset is small. memory_limit=128M in php.ini.",
+        )
+        analysis, test_case = analyzer.analyze(request)
+        assert analysis.classification == IssueCategory.MEMORY.value
+        assert "memory_limit" in test_case.code.lower()
+        assert "ini_get" in test_case.code
+        assert analysis.confidence >= 55
+
+    def test_memory_generic_classification(self, analyzer):
+        request = AnalyzeRequest(
+            title="Memory allocation failure in extension",
+            body="PHP extension causing allocation failure when processing images. "
+            "Using GD library with large PNG files.",
+        )
+        analysis, test_case = analyzer.analyze(request)
+        assert analysis.classification == IssueCategory.MEMORY.value
+        assert analysis.confidence >= 50
