@@ -413,7 +413,7 @@ class PHPIssueAnalyzer:
         # Generic test case template
         return TestCaseCreate(
             language="php",
-            code='<?php\n// Auto-generated test case template\n// Issue: ' + title + '\n\n// TODO: Add minimal reproduction code based on issue description\n\n',
+            code=f"<?php\n// Auto-generated test case template\n// Issue: {title}\n\n// TODO: Add minimal reproduction code based on issue description\n\n",
             description=f"Template for issue: {title}",
             expected_behavior="Add expected behavior based on issue analysis",
         )
