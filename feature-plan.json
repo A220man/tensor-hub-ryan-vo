@@ -74,15 +74,19 @@
     {
       "id": "auth-oidc",
       "title": "OIDC Authentication with Keycloak",
-      "status": "planned",
+      "status": "in_progress",
       "acceptance": [
         "Keycloak realm configuration",
         "Backend session management with HttpOnly cookies",
         "Frontend PKCE flow with in-memory tokens",
         "Role-based access (viewer, operator, admin)"
       ],
-      "implementation": [],
-      "tests": []
+      "implementation": [
+        "backend/app/core/oidc.py - OIDCSettings, Token, UserInfo, OIDCSession models and helpers"
+      ],
+      "tests": [
+        "backend/tests/test_oidc.py - OIDC settings and session serialization tests"
+      ]
     },
     {
       "id": "docker-compose",
