@@ -53,13 +53,17 @@ Tests: `frontend/src/components/IssueCard.test.tsx`, `frontend/src/components/Da
 
 ### auth-oidc — OIDC Authentication with Keycloak
 
-Status: planned
+Status: in_progress
 
 Acceptance:
 - Keycloak realm configuration
 - Backend session management with HttpOnly cookies
 - Frontend PKCE flow with in-memory tokens
 - Role-based access (viewer, operator, admin)
+
+Implementation: `backend/app/core/oidc.py - OIDCSettings, Token, UserInfo, OIDCSession models and helpers`
+
+Tests: `backend/tests/test_oidc.py - OIDC settings and session serialization tests`
 
 ### docker-compose — Docker Compose with Keycloak
 
