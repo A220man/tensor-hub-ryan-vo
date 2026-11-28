@@ -110,6 +110,32 @@ def _revocation_url(settings: OIDCSettings) -> str:
     """Keycloak token revocation/logout endpoint."""
     return settings.authority.rstrip("/") + "/protocol/openid-connect/logout"
 
+def generate_code_challenge(code_verifier: str, method: str = "S256") -> str:
+    """Generate PKCE code challenge from code verifier.
+
+    Args:
+        code_verifier: The random string used for PKCE.
+        method: Hash method, either "S256" or "plain".
+
+    Returns:
+        base64url-encoded code challenge string.
+
+    Raises:
+        ValueError: If method is not supported.
+    """
+    import base64
+    import hashlib
+
+    if method == "plain":
+        return code_verifier
+    elif method == "S256":
+        digest = hashlib.sha256(code_verifier.encode()).digest()
+        challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode()
+        return challenge
+    else:
+        raise ValueError(f"Unsupported code challenge method: {method}. Use 'S256' or 'plain'")
+
+
 
 __all__ = [
     "OIDCSettings",
@@ -119,4 +145,5 @@ __all__ = [
     "_build_auth_url",
     "_token_url",
     "_revocation_url",
+    "generate_code_challenge",
 ]
